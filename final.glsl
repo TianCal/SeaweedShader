@@ -60,7 +60,7 @@ vec4 seagrass(vec2 p, int seed, vec2 q, float r) {
 
     // Seagrass shape
     // Max_curve decides how bended the seagrass can be.
-    float max_curve = 1.5 - height;
+    float max_curve = 1.3 - height;
     float curve = rand_range(float(seed+1), -max_curve, max_curve);
     float seagrass_curve = abs(pos.x - sign(curve) * pow(curve * (pos.y), 2.0));
 
@@ -113,7 +113,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     float x = (p.x + (m / 120.)) ;
     vec2 newp = vec2(x, y);
     for(int i = 0; i < 25; i ++){
-        float radius = rand_range(float(i), 0.03, 0.04);
+        float radius = rand_range(float(i), 0.02, 0.025);
         vec4 seagrassouter = seagrass(newp, i, newp-.5, radius);
         if (seagrassouter.w < 1.) {
             col = seagrassouter.xyz;
