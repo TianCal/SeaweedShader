@@ -50,37 +50,46 @@ float fbm (in vec2 st) {
     return ret;
 }
 
-vec4 grass(vec2 p, int i, vec2 q, float r) {
-    float height = rand_range(float(i+17), 0.1, 0.9);
-    float max_curve = 1.0 - height + 0.40;
-    float curve = rand_range(float(i+1), -max_curve, max_curve);
-    vec2 pos = vec2(rand_range(float(i+3),-0.35,0.35 ), 0.0);
+vec4 seagrass(vec2 p, int seed, vec2 q, float r) {
+    float height = rand_range(float(seed + 17), 0.1, 0.9);
+    vec2 pos = vec2(rand_range(float(seed + 4), -0.35, 0.35), 0.0);
     
     pos = q + pos;
+    // y = 0 is the bottom of the seagrass
     pos.y += 0.5; 
 
-    r = r * (1.0 - 1.0 * smoothstep(0.8*height, height, pos.y)); 
-    float s = sign(curve);
-    float grass_curve = abs(pos.x - s* pow( curve*( pos.y),2.0));
-    float width = 0.005 * cos((pos.y - iTime / 25. + rand(float(i+3)) * 10.) * 73.) + 0.025*rand(float(i+3));
-    width *= (1.0 - 1.1 * smoothstep(0.8*height, height, pos.y)); 
-    float res = smoothstep(r, r + 0.008 + width, grass_curve);
-    float inner_r = r/20.;
-    float width_inner = 0.004 * cos((pos.y) * 17.+ rand(float(i+3)) * 10.);
-    width_inner *= (1.0 - 1.1 * smoothstep(0.8*height, height, pos.y));
-    float inner_res = smoothstep(inner_r, inner_r+ 0.008 + width_inner, grass_curve);
+    // Seagrass shape
+    // Max_curve decides how bended the seagrass can be.
+    float max_curve = 1.5 - height;
+    float curve = rand_range(float(seed+1), -max_curve, max_curve);
+    float seagrass_curve = abs(pos.x - sign(curve) * pow(curve * (pos.y), 2.0));
 
-    // Color of the grass
-    vec3 col = vec3(102./255., rand_range(float(i-10),0.55,0.65) ,51./255.);
-    col = col - vec3(0.0,0.10,0.0)* (1.0-smoothstep(0.0, r,grass_curve));
+    // Generate seagrass
+    // R decreases with distance from the maximum height
+    r = r * (1.0 - 1.0 * smoothstep(0.78 * height, height, pos.y)); 
+    float width = 0.005 * cos((pos.y - iTime / 25. + rand(float(seed+3)) * 10.) * 73.) + 0.025*rand(float(seed+3));
+    width *= (1.0 - 1.1 * smoothstep(0.8*height, height, pos.y)); 
+    float res = smoothstep(r, r + 0.008 + width, seagrass_curve);
+
+    // We generate inner stem of the seagrass in a similar manner, but with a 1/20 radius 
+    float inner_r = r/20.;
+    float width_inner = 0.004 * cos((pos.y) * 17.+ rand(float(seed+3)) * 10.);
+    width_inner *= (1.0 - 1.1 * smoothstep(0.8*height, height, pos.y));
+    float inner_res = smoothstep(inner_r, inner_r+ 0.008 + width_inner, seagrass_curve);
+
+    // Color of the seagrass
+    // G in RGB is random in range (0.5 ~ 0.65)
+    vec3 col = vec3(102./255., rand_range(float(seed-10),0.5,0.65) ,51./255.);
+    // Color gets darker (less green) as the seagrass gets closer to the stem
+    col = col - vec3(0.0, 0.1, 0.0) * (1.0-smoothstep(0.0, r, seagrass_curve));
 
     // FBM noise. 
     float f = fbm(100. * vec2(p.x * 3., p.y * .2));
     col = mix(col - vec3(0.0,0.03,0.0) , col + vec3(0.0,0.03,0.0) ,f);
 
-    // This part is for the inner grass
+    // This part is for the inner seagrass
     if (inner_res <1.) col /= 1.5;
-    // Simply to kill the grass higher than maximum height
+    // Simply to kill the seagrass higher than maximum height
     if (pos.y > height) return vec4(col,1.1);
     return vec4(col, res);
 }
@@ -105,9 +114,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec2 newp = vec2(x, y);
     for(int i = 0; i < 25; i ++){
         float radius = rand_range(float(i), 0.03, 0.04);
-        vec4 grassouter = grass(newp, i, newp-.5, radius);
-        if (grassouter.w < 1.) {
-            col = grassouter.xyz;
+        vec4 seagrassouter = seagrass(newp, i, newp-.5, radius);
+        if (seagrassouter.w < 1.) {
+            col = seagrassouter.xyz;
         }
     }
     fragColor = vec4(col, 1.0);
