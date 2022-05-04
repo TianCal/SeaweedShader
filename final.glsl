@@ -102,7 +102,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     uv -= 0.5;
     float d = uv.y;
     float c = d;
-    float r = -0.15;
+    float r = -0.40;
     c = smoothstep(r, r - 0.15, d);
     vec3 ground = vec3(c)* vec3(0.76, 0.69, 0.50) * (0.75 + 0.25 * cos(0.5 * iTime));;
     vec3 sky = vec3(1.0 - c)* vec3(0.1, 0.5, 0.90) * (0.75 + 0.25 * cos(0.5 * iTime));
