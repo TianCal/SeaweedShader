@@ -33,7 +33,12 @@ vec4 grass(vec2 p, int i, vec2 q, float r, float grass_width) {
     float inner_res = smoothstep(inner_r, inner_r+ 0.008 + width_inner, grass_curve);
     vec3 col = vec3(102./255., rand_range(float(i-10),0.55,0.65) ,51./255.);
     col = col - vec3(0.0,0.10,0.0)* (1.0-smoothstep(0.0, r,grass_curve));
+
+
+    
+    // This part is for the inner grass
     if (inner_res <1.) col /= 1.5;
+    // Simply to kill the grass higher than maximum height
     if (pos.y > height) return vec4(col,1.1);
     return vec4(col, res);
 }
